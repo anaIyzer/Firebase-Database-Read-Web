@@ -1,0 +1,103 @@
+<!doctype html>
+<html>
+    <head>
+      <meta charset="utf-8">
+      <title>Firebase Test</title>
+
+      <script src="https://www.gstatic.com/firebasejs/5.2.0/firebase.js"></script>
+      <script>
+        // Initialize Firebase
+        var config = {
+          //apiKey: "x", // - read 권한이 true로 되어있기 때문에 인증키를 넘겨주지 않아도 됨
+          authDomain: "wemostest-xxxxx.firebaseapp.com",
+          databaseURL: "https://wemostest-xxxxx.firebaseio.com",
+          projectId: "wemostest-xxxxx",
+          storageBucket: "wemostest-xxxxx.appspot.com",
+          messagingSenderId: "xxxxxxxxxxxx"
+        };
+        firebase.initializeApp(config);
+    </script>
+  </head>
+
+  <body>
+    <table>
+      <tr>
+        <td>Key</td>
+        <td><input type="text" name="key" id="key" /></td>
+      </tr>
+
+      <tr>
+        <td>PM1.0</td>
+        <td><input type="text" name="PM1_0" id="PM1_0" /></td>
+      </tr>
+      <tr>
+        <td>PM2.5</td>
+        <td><input type="text" name="PM2_5" id="PM2_5" /></td>
+      </tr>
+      <tr>
+          <td>PM10</td>
+          <td><input type="text" name="PM10" id="PM10" /></td>
+      </tr>
+      <tr>
+          <td>humidity</td>
+          <td><input type="text" name="humidity" id="humidity" /></td>
+      </tr>
+      <tr>
+          <td>temperature</td>
+          <td><input type="text" name="temperature" id="temperature" /></td>
+      </tr>
+      <tr>
+          <td>time</td>
+          <td><input type="text" name="time" id="time" /></td>
+      </tr>
+      <tr>
+        <td>
+          <input type="button" value="Refresh" onclick="refresh_data();" />
+        </td>
+      </tr>
+    </table>
+
+    <script>
+      var dbRef = firebase.database().ref('ENV-DATA-LOG');
+      
+      // 한 번만 호출되는 함수 형태이다.
+      dbRef.once('value', function(snapshot) {
+        var lastData = 0;
+        
+        // 반복문을 이용해 맨 마지막 스냅샷값을 얻는다.
+        snapshot.forEach(function(childSnapshot) {
+          lastData = childSnapshot;
+        });
+
+        setValue(lastData);
+      });
+      
+      // child_added 이벤트: 스냅샷이 추가되면 추가된 스냅샷을 받아오게 된다.
+      dbRef.on("child_added", function(snapshot) {
+        setValue(snapshot);
+      });
+      
+      // child_changed 이벤트: 스냅샷이 수정되면 수정된 스냅샷을 받아오게 된다.
+      dbRef.on("child_changed", function(snapshot) {
+        setValue(snapshot);
+      });
+      
+      // html 태그에 받아온 값을 적용시켜주는 함수이다.
+      function setValue(snapshot)
+      {
+        document.getElementById('key').value = snapshot.key;
+        document.getElementById('PM1_0').value = snapshot.val().PM1_0;
+        document.getElementById('PM2_5').value = snapshot.val().PM2_5;
+        document.getElementById('PM10').value = snapshot.val().PM10;
+        document.getElementById('humidity').value = snapshot.val().humidity;
+        document.getElementById('temperature').value = snapshot.val().temperature_C;
+        document.getElementById('time').value = snapshot.val().time;
+      };
+      
+      // 새로고침
+      function refresh_data() {
+        window.location.reload();
+      };
+    </script>
+  </body>
+</html>
